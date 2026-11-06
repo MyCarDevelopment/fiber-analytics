@@ -9,6 +9,7 @@ export function validate(v) {
     const n = Number(v[k]);
     if (!Number.isFinite(n) || n < 0 || n > 1e9 || (['price','weight','usd','cny'].includes(k) && n === 0)) throw Error('Проверьте цену, загрузку и курсы: значения должны быть положительными');
   }
+  if (v.vatRate !== undefined && (v.vatRate === null || String(v.vatRate).trim() === '' || !['string','number'].includes(typeof v.vatRate) || !Number.isFinite(Number(v.vatRate)) || Number(v.vatRate) < 0 || Number(v.vatRate) > 100)) throw Error('Ставка НДС должна быть от 0 до 100%');
   return v;
 }
 export function calculate(v, freightChange = 0, fxChange = 0) {
@@ -16,5 +17,8 @@ export function calculate(v, freightChange = 0, fxChange = 0) {
   const fx = 1 + fxChange / 100, fc = 1 + freightChange / 100;
   const goods = Number(v.price) * Number(v.currency === 'USD' ? v.usd : v.cny) * fx;
   const freight = v.basis === 'CPT' ? 0 : (Number(v.freightUsd) * Number(v.usd) * fx + Number(v.freightRub)) * fc / Number(v.weight);
-  return {goods,freight,total:goods+freight};
+  const total = goods + freight;
+  const vatRate = Number(v.vatRate ?? 0);
+  const vat = total * vatRate / 100;
+  return {goods,freight,total,vatRate,vat,totalWithVat:total+vat};
 }
