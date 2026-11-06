@@ -12,8 +12,7 @@ Telegram-бот для расчёта закупки волокна до пят�
 
 1. Создайте аккаунт на https://dash.cloudflare.com/ и откройте Workers & Pages. Включите бесплатный Workers Free и выберите поддомен workers.dev, если предложено. Платный Render для этого варианта не нужен. Если раньше создали Render worker, остановите его, чтобы не работал второй экземпляр.
 2. Скопируйте Account ID из панели Cloudflare. В **My Profile → API Tokens → Create Token** выберите шаблон **Edit Cloudflare Workers**, ограничьте своим аккаунтом. Токен должен разрешать развёртывание Workers, управление Durable Objects и чтение поддомена Workers. Домены/зоны для workers.dev не требуются. Используйте API token, а не Global API Key.
-3. В GitHub откройте репозиторий → **Settings → Secrets and variables → Actions → Secrets → New repository secret**. Добавьте четыре секрета:
-   - `CLOUDFLARE_ACCOUNT_ID` — Account ID;
+3. В GitHub откройте репозиторий → **Settings → Secrets and variables → Actions → Secrets → New repository secret**. Account ID уже указан в workflow. Добавьте три секрета:
    - `CLOUDFLARE_API_TOKEN` — созданный Cloudflare API token;
    - `TELEGRAM_BOT_TOKEN` — токен от BotFather;
    - `WEBHOOK_SECRET` — новая случайная строка из менеджера паролей: 32 или более латинских букв и цифр (разрешены также `_` и `-`, максимум 256 символов). Не используйте токен бота как этот секрет.
