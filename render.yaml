@@ -1,0 +1,25 @@
+# Deploy: https://render.com/deploy?repo=https://github.com/MyCarDevelopment/fiberanalytics-bot
+# Render will show the current worker and disk charges before creation.
+services:
+  - type: worker
+    name: fiberanalytics-bot
+    runtime: python
+    plan: starter
+    numInstances: 1
+    buildCommand: python -m compileall -q .
+    startCommand: python bot.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.14
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      # Bootstrap: no colleague access until replaced with actual Telegram IDs.
+      # After deploy, send /id to the bot and replace 1 in Render Environment.
+      - key: ALLOWED_USER_IDS
+        value: "1"
+      - key: DATABASE_PATH
+        value: /data/bot.sqlite3
+    disk:
+      name: fiberanalytics-data
+      mountPath: /data
+      sizeGB: 1
