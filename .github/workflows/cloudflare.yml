@@ -20,7 +20,7 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          accountId: 'c4a61a002dc0612b74c1cbbd2c217cb3'
           wranglerVersion: '4.45.0'
           command: deploy --var ALLOWED_USER_IDS:${{ vars.ALLOWED_USER_IDS || '1' }}
           secrets: |
@@ -33,6 +33,6 @@ jobs:
         run: node scripts/webhook.mjs
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: 'c4a61a002dc0612b74c1cbbd2c217cb3'
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
