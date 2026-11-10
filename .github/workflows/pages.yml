@@ -32,6 +32,7 @@ jobs:
       - name: Check JavaScript
         run: |
           node --check docs/app.mjs
+          node --check docs/home.mjs
           node --check docs/calc.mjs
           node --check docs/tables.mjs
           node --check docs/reference-data.mjs

@@ -3,7 +3,7 @@ import {roles,warehouses,groups,today,ordered,latest,sameTerms,priceChange,age,l
 const $=s=>document.querySelector(s);
 const E=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
 const money=n=>new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
-let state={suppliers:[],routes:[],quotes:[],rates:[],members:[],days:7},me=null,view='summary',refreshing=false,editAction=null,authGeneration=0;
+let state={suppliers:[],routes:[],quotes:[],rates:[],members:[],days:7},me=null,view=['summary','suppliers','routes'].includes(window.location.hash.slice(1))?window.location.hash.slice(1):'summary',refreshing=false,editAction=null,authGeneration=0;
 const canEdit=()=>['manager','lead'].includes(me?.role);
 const owns=row=>me?.role==='lead'||row.owner_email===me?.email;
 const person=email=>state.members.find(m=>m.email===email)?.name||email;
@@ -12,7 +12,7 @@ function error(e){status(e.message||'Не удалось выполнить де
 function button(text,fn){const b=E('button',text);b.type='button';b.addEventListener('click',async()=>{b.disabled=true;try{await fn();}catch(e){error(e);}finally{b.disabled=false;}});return b;}
 function hidePrivate(){authGeneration++;me=null;state={suppliers:[],routes:[],quotes:[],rates:[],members:[],days:7};$('#workspace').hidden=true;$('#auth').hidden=false;$('#logout').hidden=true;$('#change-password').hidden=true;$('#account').textContent='';for(const id of ['#summary-body','#supplier-cards','#route-cards','#member-list','#edit-form'])$(id).replaceChildren();if($('#editor').open)$('#editor').close();}
 window.addEventListener('team-session-ended',()=>{hidePrivate();status('Сессия завершена. Войдите снова.',true);});
-function connectionUI(){const ready=api.configured();$('#not-configured').hidden=ready;$('#login-form button').disabled=!ready;$('#connection').open=!ready;}
+function connectionUI(){const ready=api.configured();$('#not-configured').hidden=ready;$('#login-form button').disabled=!ready;$('#connection').open=!ready;$('#connection').hidden=ready;}
 $('#connection-form').addEventListener('submit',e=>{e.preventDefault();try{const f=new FormData(e.target);api.configure(f.get('url'),f.get('key'));connectionUI();status('Подключение сохранено. Теперь войдите по логину и паролю.');}catch(err){error(err);}});
 $('#login-form').addEventListener('submit',async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;try{await api.signIn(e.target.elements.login.value,e.target.elements.password.value);e.target.elements.password.value='';await load();if(me)status('Вход выполнен. Данные общей базы загружены.');}catch(err){error(err);}finally{b.disabled=false;}});
 $('#logout').addEventListener('click',async()=>{hidePrivate();try{await api.signOut();}catch{}$('#login-form').reset();status('Вы вышли из общей базы.');});
@@ -27,7 +27,7 @@ async function load(){
   $('#admin-tab').hidden=me.role!=='lead';$('#new-supplier').hidden=!canEdit();$('#new-route').hidden=!canEdit();
   $('#supplier-title').textContent=me.role==='lead'?'Все поставщики':me.role==='sales'?'Поставщики':'Мои поставщики';
   if(view==='admin'&&me.role!=='lead')view='summary';
-  fillOwnerFilter();render();showView(view);$('#loaded-at').textContent=`Данные обновлены ${new Date().toLocaleTimeString('ru-RU')}. Автообновление раз в минуту, пока открыта вкладка.`;
+  fillOwnerFilter();render();showView(view);$('#loaded-at').textContent=`Обновлено ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} · автообновление`;
  }finally{refreshing=false;}
 }
 async function reload(){const generation=authGeneration;await load();if(me&&generation===authGeneration)status('Общая сводка обновлена.');}
