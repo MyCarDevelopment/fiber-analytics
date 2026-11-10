@@ -1,5 +1,5 @@
 import * as api from './api.mjs';
-import {roles,warehouses,groups,today,ordered,latest,sameTerms,priceChange,age,landed,numeric} from './model.mjs';
+import {roles,warehouses,groups,today,ordered,latest,sameTerms,priceChange,age,landed,numeric,loginToEmail,emailToLogin} from './model.mjs';
 const $=s=>document.querySelector(s);
 const E=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
 const money=n=>new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
@@ -10,23 +10,20 @@ const person=email=>state.members.find(m=>m.email===email)?.name||email;
 function status(text,error=false){$('#status').textContent=text;$('#status').className=error?'error':'';}
 function error(e){status(e.message||'Не удалось выполнить действие',true);}
 function button(text,fn){const b=E('button',text);b.type='button';b.addEventListener('click',async()=>{b.disabled=true;try{await fn();}catch(e){error(e);}finally{b.disabled=false;}});return b;}
-function hidePrivate(){authGeneration++;me=null;state={suppliers:[],routes:[],quotes:[],rates:[],members:[],days:7};$('#workspace').hidden=true;$('#auth').hidden=false;$('#logout').hidden=true;$('#account').textContent='';for(const id of ['#summary-body','#supplier-cards','#route-cards','#member-list','#edit-form'])$(id).replaceChildren();if($('#editor').open)$('#editor').close();}
+function hidePrivate(){authGeneration++;me=null;state={suppliers:[],routes:[],quotes:[],rates:[],members:[],days:7};$('#workspace').hidden=true;$('#auth').hidden=false;$('#logout').hidden=true;$('#change-password').hidden=true;$('#account').textContent='';for(const id of ['#summary-body','#supplier-cards','#route-cards','#member-list','#edit-form'])$(id).replaceChildren();if($('#editor').open)$('#editor').close();}
 window.addEventListener('team-session-ended',()=>{hidePrivate();status('Сессия завершена. Войдите снова.',true);});
-function connectionUI(){const ready=api.configured();$('#not-configured').hidden=ready;$('#email-form button').disabled=!ready;$('#connection').open=!ready;}
-$('#connection-form').addEventListener('submit',e=>{e.preventDefault();try{const f=new FormData(e.target);api.configure(f.get('url'),f.get('key'));connectionUI();status('Подключение сохранено. Теперь запросите код на почту.');}catch(err){error(err);}});
-let pendingEmail='';
-$('#email-form').addEventListener('submit',async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;try{pendingEmail=e.target.elements.email.value.trim().toLowerCase();await api.requestCode(pendingEmail);$('#code-form').hidden=false;$('#email-form').hidden=true;status('Если отправка настроена, код придёт на указанную почту. Проверьте также папку «Спам».');$('#code-form input').focus();}catch(err){error(err);}finally{b.disabled=false;}});
-$('#another-email').addEventListener('click',()=>{$('#code-form').hidden=true;$('#email-form').hidden=false;$('#code-form').reset();});
-$('#code-form').addEventListener('submit',async e=>{e.preventDefault();const b=e.target.querySelector('button[type=submit]');b.disabled=true;try{await api.verifyCode(pendingEmail,e.target.elements.code.value.trim());e.target.reset();await load();}catch(err){error(err);}finally{b.disabled=false;}});
-$('#logout').addEventListener('click',async()=>{hidePrivate();try{await api.signOut();}catch{}$('#code-form').hidden=true;$('#email-form').hidden=false;status('Вы вышли из общей базы.');});
+function connectionUI(){const ready=api.configured();$('#not-configured').hidden=ready;$('#login-form button').disabled=!ready;$('#connection').open=!ready;}
+$('#connection-form').addEventListener('submit',e=>{e.preventDefault();try{const f=new FormData(e.target);api.configure(f.get('url'),f.get('key'));connectionUI();status('Подключение сохранено. Теперь войдите по логину и паролю.');}catch(err){error(err);}});
+$('#login-form').addEventListener('submit',async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;try{await api.signIn(e.target.elements.login.value,e.target.elements.password.value);e.target.elements.password.value='';await load();if(me)status('Вход выполнен. Данные общей базы загружены.');}catch(err){error(err);}finally{b.disabled=false;}});
+$('#logout').addEventListener('click',async()=>{hidePrivate();try{await api.signOut();}catch{}$('#login-form').reset();status('Вы вышли из общей базы.');});
 async function load(){
  if(refreshing)return;refreshing=true;const generation=authGeneration;
  try{
   const user=await api.who();const members=await api.members();if(generation!==authGeneration)return;const member=members.find(m=>m.email===user.email?.toLowerCase()&&m.active);
-  if(!member){await api.signOut();hidePrivate();throw Error('Для этой почты доступ не открыт. Попросите руководителя добавить адрес в список сотрудников.');}
+  if(!member){await api.signOut();hidePrivate();throw Error('Для этого аккаунта доступ не открыт. Попросите руководителя проверить роль и статус сотрудника.');}
   const result=await Promise.all([api.rows('fa_suppliers'),api.rows('fa_routes'),api.rows('fa_quotes'),api.rows('fa_freight_rates'),api.settings()]);
   if(generation!==authGeneration)return;me=member;state={members,suppliers:result[0],routes:result[1],quotes:result[2],rates:result[3],days:result[4][0]?.stale_days||7};
-  $('#auth').hidden=true;$('#workspace').hidden=false;$('#logout').hidden=false;$('#account').textContent=`${me.name} · ${roles[me.role]}`;
+  $('#auth').hidden=true;$('#workspace').hidden=false;$('#logout').hidden=false;$('#change-password').hidden=false;$('#account').textContent=`${me.name} · ${roles[me.role]}`;
   $('#admin-tab').hidden=me.role!=='lead';$('#new-supplier').hidden=!canEdit();$('#new-route').hidden=!canEdit();
   $('#supplier-title').textContent=me.role==='lead'?'Все поставщики':me.role==='sales'?'Поставщики':'Мои поставщики';
   if(view==='admin'&&me.role!=='lead')view='summary';
@@ -78,14 +75,14 @@ function renderRoutes(){
   const actions=E('div',undefined,'actions');if(canEdit()&&owns(r))actions.append(button('Обновить ставку',()=>rateDialog(r)),button('Условия',()=>routeDialog(r)));actions.append(button('История',()=>rateHistory(r)));card.append(actions);box.append(card);
  }if(!box.children.length)box.append(E('p','Маршрутов пока нет. Для CPT отдельный фрахт не требуется.','note'));
 }
-function renderAdmin(){if(me.role!=='lead')return;const box=$('#member-list');box.replaceChildren();for(const m of state.members){const div=E('div');div.append(E('span',`${m.name} · ${m.email} · ${roles[m.role]}${m.active?'':' · отключён'}`),button('Изменить',()=>{const f=$('#member-form');for(const k of ['email','name','role'])f.elements[k].value=m[k];f.elements.active.value=String(m.active);}));box.append(div);}$('#settings-form').elements.days.value=state.days;}
+function renderAdmin(){if(me.role!=='lead')return;const box=$('#member-list');box.replaceChildren();for(const m of state.members){const div=E('div');div.append(E('span',`${m.name} · ${emailToLogin(m.email)} · ${roles[m.role]}${m.active?'':' · отключён'}`),button('Изменить',()=>{const f=$('#member-form');f.elements.login.value=emailToLogin(m.email);for(const k of ['name','role'])f.elements[k].value=m[k];f.elements.active.value=String(m.active);}));box.append(div);}$('#settings-form').elements.days.value=state.days;}
 function render(){renderSummary();renderSuppliers();renderRoutes();renderAdmin();}
 function openDialog(title){$('#dialog-title').textContent=title;$('#dialog-status').textContent='';$('#edit-form').replaceChildren();$('#editor').showModal();}
 $('#close-dialog').addEventListener('click',()=>$('#editor').close());
 function field(key,label,{type='text',value='',options,required=true,maxLength=200,full=false,min,step='any',max}={}){
  const wrap=E('label',label);if(full)wrap.className='full';let input;
  if(options){input=E('select');for(const option of options){const [val,text]=Array.isArray(option)?option:[option,option];input.append(new Option(text,val));}}
- else {input=E(type==='textarea'?'textarea':'input');if(type!=='textarea')input.type=type;input.maxLength=maxLength;if(type==='number'){input.step=step;if(min!==undefined)input.min=min;if(max!==undefined)input.max=max;}}
+ else {input=E(type==='textarea'?'textarea':'input');if(type!=='textarea')input.type=type;input.maxLength=maxLength;if(type==='password')input.autocomplete='new-password';if(type==='number'){input.step=step;if(min!==undefined)input.min=min;if(max!==undefined)input.max=max;}}
  if(type==='date'&&max)input.max=max;input.name=key;input.required=required;input.value=value??'';wrap.append(input);$('#edit-form').append(wrap);return input;
 }
 function submitDialog(fn){editAction=fn;const b=E('button','Сохранить новую запись');b.type='submit';b.className='full';$('#edit-form').append(b);}
@@ -97,6 +94,7 @@ function supplierDialog(s){
  const note=E('p','Указывайте цены без НДС. Для CPT пункт доставки должен соответствовать выбранному складу. Изменение условий фиксируется в следующей котировке; старые записи сохраняют прежние условия.','note full');$('#edit-form').append(note);
  submitDialog(async v=>{v.weight=numeric(v.weight,'Загрузка',{max:100000});v.route_id=v.basis==='CPT'?null:(v.route_id||null);if(v.route_id&&state.routes.find(r=>r.id===v.route_id)?.warehouse!==warehouse.value)throw Error('Выбранный маршрут ведёт на другой склад');if(s)await api.update('fa_suppliers',s.id,v);else await api.insert('fa_suppliers',v);});
 }
+$('#change-password').addEventListener('click',()=>{openDialog('Сменить свой пароль');field('current','Текущий пароль',{type:'password',full:true});field('password','Новый пароль — минимум 12 символов',{type:'password',full:true});field('repeat','Повторите новый пароль',{type:'password',full:true});submitDialog(async v=>{if(v.password!==v.repeat)throw Error('Новые пароли не совпадают');await api.changePassword(emailToLogin(me.email),v.current,v.password);});});
 $('#new-supplier').addEventListener('click',()=>supplierDialog());
 function routeDialog(r){openDialog(r?'Условия маршрута':'Новый маршрут');ownerField(r?.owner_email);field('origin','Пункт отправления и полный маршрут',{value:r?.origin,full:true});field('warehouse','Склад назначения',{value:r?.warehouse||warehouses[0],options:warehouses});$('#edit-form').append(E('p','Если меняется пункт отправления или склад, создайте новый маршрут: старые ставки относятся к прежним условиям.','note full'));submitDialog(v=>r?api.update('fa_routes',r.id,v):api.insert('fa_routes',v));}
 $('#new-route').addEventListener('click',()=>routeDialog());
@@ -117,7 +115,7 @@ function historyDialog(s){
  for(const q of quotes){const rate=state.rates.find(r=>r.id===q.freight_rate_id),cost=landed(q,rate);box.append(E('div',`${q.quote_date} · ${money(q.price)} ${q.snapshot.currency}/кг${q.source_quote_id?' · без изменений':''}\n${q.snapshot.material} · ${q.snapshot.basis} · ${q.snapshot.warehouse} · ${q.snapshot.point}\nКурсы: USD ${q.usd_rate}, CNY ${q.cny_rate}; НДС ${q.vat_rate}%. ${cost?`По ставке, сохранённой при внесении: ${money(cost.net)} ₽/кг без НДС, ${money(cost.gross)} с НДС.`:'Доставка до склада не рассчитана: нет исторической ставки.'}\n${person(q.created_by)} · внесено ${new Date(q.created_at).toLocaleString('ru-RU')}\n${q.note}`,'history-item'));}if(!quotes.length)box.append(E('p','История пока пустая.'));
 }
 function rateHistory(r){openDialog(`История фрахта · ${r.origin}`);editAction=null;const box=$('#edit-form');for(const v of ordered(state.rates.filter(v=>v.route_id===r.id)))box.append(E('div',`${v.quote_date} · ${money(v.usd)} USD + ${money(v.rub)} RUB · ${v.status}\n${v.snapshot.origin} → ${v.snapshot.warehouse}\n${person(v.created_by)} · ${new Date(v.created_at).toLocaleString('ru-RU')}\n${v.note}`,'history-item full'));if(!box.children.length)box.append(E('p','История пока пустая.'));}
-$('#member-form').addEventListener('submit',async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;try{const v=Object.fromEntries(new FormData(e.target));await api.rpc('fa_set_member',{p_email:v.email,p_name:v.name,p_role:v.role,p_active:v.active==='true'});e.target.reset();await reload();}catch(err){error(err);}finally{b.disabled=false;}});
+$('#member-form').addEventListener('submit',async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;try{const v=Object.fromEntries(new FormData(e.target));await api.rpc('fa_set_member',{p_email:loginToEmail(v.login),p_name:v.name,p_role:v.role,p_active:v.active==='true'});e.target.reset();await reload();}catch(err){error(err);}finally{b.disabled=false;}});
 $('#settings-form').addEventListener('submit',async e=>{e.preventDefault();try{await api.update('fa_settings','true',{stale_days:numeric(e.target.elements.days.value,'Срок',{max:90})});await reload();}catch(err){error(err);}});
 $('#export-summary').addEventListener('click',()=>{
  const rows=[['Поставщик','Материал','Страна','Склад','Базис','Дата цены','Цена/кг','Валюта','Изменение %','Цена без НДС RUB/кг','Цена с НДС RUB/кг','Дата фрахта','USD/RUB','CNY/RUB','Ответственный'],...summaryRows().map(({s,q,previous,rate,cost})=>{const t=q?.snapshot||s;return [t.name,t.material,t.country,t.warehouse,t.basis,q?.quote_date,q?.price,t.currency,priceChange(q,previous),cost?.net,cost?.gross,rate?.quote_date,q?.usd_rate,q?.cny_rate,person(s.owner_email)];})];

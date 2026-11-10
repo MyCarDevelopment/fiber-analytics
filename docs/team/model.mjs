@@ -19,3 +19,7 @@ export function landed(quote,rate){
 }
 export function numeric(value,label,{zero=false,max=1e9}={}){const n=Number(String(value).trim().replace(',','.'));if(String(value).trim()===''||!Number.isFinite(n)||n<0||(!zero&&n===0)||n>max)throw Error(`Проверьте поле «${label}»`);return n;}
 export function endpoint(value){const u=new URL(value);if(u.protocol!=='https:'||!/^([a-z0-9-]+)\.supabase\.co$/.test(u.hostname)||u.port||u.username||u.password)throw Error('Укажите Project URL вида https://….supabase.co');return u.origin;}
+
+export const loginDomain='fiberanalytics.invalid';
+export function loginToEmail(value){const login=String(value).trim().toLowerCase();if(!/^[a-z0-9][a-z0-9._-]{2,31}$/.test(login))throw Error('Логин: 3–32 латинских буквы, цифры, точка, дефис или подчёркивание');return `${login}@${loginDomain}`;}
+export function emailToLogin(value){const email=String(value);return email.endsWith('@'+loginDomain)?email.slice(0,-loginDomain.length-1):email;}
