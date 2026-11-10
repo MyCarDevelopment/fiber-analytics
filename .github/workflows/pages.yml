@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'tests/reference-data.test.mjs'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
@@ -26,6 +27,9 @@ jobs:
         run: |
           node --check docs/app.mjs
           node --check docs/calc.mjs
+          node --check docs/tables.mjs
+          node --check docs/reference-data.mjs
+          node tests/reference-data.test.mjs
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:

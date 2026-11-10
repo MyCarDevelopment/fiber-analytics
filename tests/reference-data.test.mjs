@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {cleanRow,parseReferenceFile,supplierValues,freightValues} from '../docs/reference-data.mjs';
+const supplier={supplier:'Поставщик',material:'6D',group:'Регуляр',country:'Узбекистан',basis:'FCA',point:'Ташкент',price:'0,85',currency:'USD',weight:'22000',date:'2026-11-10'};
+const freight={origin:'Ташкент → Екатеринбург',warehouse:'Екатеринбург',usd:'2250',rub:'0',date:'2026-11-10',status:'Предложение',note:''};
+test('normalizes decimal comma and strips unrecognized properties',()=>{const r=cleanRow('suppliers',{...supplier,unexpected:'remove'});assert.equal(r.price,'0.85');assert.equal(r.unexpected,undefined);});
+test('supplier transfer resets previous freight',()=>{const v=supplierValues(supplier);assert.equal(v.material,'Поставщик · 6D');assert.equal(v.freightUsd,'0');assert.equal(v.freightRub,'0');assert.equal(v.weight,'22000');});
+test('CPT destination can select warehouse',()=>assert.equal(supplierValues({...supplier,basis:'CPT',point:'Иваново'}).warehouse,'Иваново'));
+test('freight accepts only matching destination and excludes CPT',()=>{assert.deepEqual(freightValues(freight,'Екатеринбург','FCA'),{freightUsd:'2250',freightRub:'0'});assert.throws(()=>freightValues(freight,'Иваново','FCA'));assert.throws(()=>freightValues(freight,'Екатеринбург','CPT'));});
+test('file roundtrip validates both tables atomically',()=>{const data={type:'fiber-reference-data',version:1,suppliers:[supplier],freights:[freight]};const parsed=parseReferenceFile(JSON.parse(JSON.stringify(data)));assert.equal(parsed.suppliers[0].price,'0.85');assert.equal(parsed.freights[0].usd,'2250');assert.throws(()=>parseReferenceFile({...data,freights:[{...freight,usd:'oops'}]}));});
+test('invalid dates, input and destination rejected',()=>{for(const date of ['2026-02-30','bad'])assert.throws(()=>cleanRow('suppliers',{...supplier,date}));for(const weight of [0,-1,'NaN'])assert.throws(()=>cleanRow('suppliers',{...supplier,weight}));assert.throws(()=>cleanRow('freights',{...freight,warehouse:'Unknown'}));assert.throws(()=>cleanRow('suppliers',{...supplier,supplier:''}));});
