@@ -41,6 +41,8 @@ jobs:
           node --check docs/team/api.mjs
           node tests/team-model.test.mjs
           node tests/team-db.test.mjs
+          node tests/freight-v2-db.test.mjs
+          node tests/currency-fields.test.mjs
           node tests/login-install.test.mjs
           node tests/team-ui.test.mjs
           TEAM_TEST_ROLE=sales node tests/team-ui.test.mjs

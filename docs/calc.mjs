@@ -4,7 +4,7 @@ export function validate(v) {
   for (const k of ['material','group','country','point']) if (typeof v[k] !== 'string' || !v[k].trim() || v[k].length > 160) throw Error('Заполните материал, группу, страну и пункт поставки');
   if (!warehouses.includes(v.warehouse) || !['CPT','FCA','FOB'].includes(v.basis) || !['USD','CNY'].includes(v.currency)) throw Error('Неверный склад, базис или валюта');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(v.date) || Number.isNaN(Date.parse(v.date))) throw Error('Укажите дату котировки');
-  for (const k of ['price','weight','usd','cny','freightUsd','freightRub']) {
+  for (const k of ['price','weight','usd','freightUsd','freightRub',...(v.currency==='CNY'?['cny']:[])]) {
     if ((typeof v[k] !== 'string' && typeof v[k] !== 'number') || String(v[k]).trim() === '') throw Error('Заполните числовые поля');
     const n = Number(v[k]);
     if (!Number.isFinite(n) || n < 0 || n > 1e9 || (['price','weight','usd','cny'].includes(k) && n === 0)) throw Error('Проверьте цену, загрузку и курсы: значения должны быть положительными');

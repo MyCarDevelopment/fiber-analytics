@@ -1,0 +1,8 @@
+import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
+const {JSDOM}=await import(new URL('./node_modules/jsdom/lib/api.js',import.meta.url).href),dom=new JSDOM(await readFile(new URL('../docs/calculator.html',import.meta.url),'utf8'),{url:'https://example.test/calculator.html'}),w=dom.window;
+for(const k of ['window','document','localStorage','FormData','Event'])globalThis[k]=k==='window'?w:w[k];
+await import('../docs/app.mjs');const form=document.querySelector('#form');
+assert.equal(form.elements.cny.required,true);form.elements.country.value='Узбекистан';form.elements.country.dispatchEvent(new Event('change'));assert.equal(form.elements.currency.value,'USD');assert.equal(form.elements.cny.disabled,true);assert.equal(form.elements.cny.closest('label').hidden,true);
+for(const [k,v]of Object.entries({material:'Test quote',point:'Ташкент',price:'0.85',weight:'22000',usd:'100',freightUsd:'2250',freightRub:'0',vatRate:'22'}))form.elements[k].value=v;
+form.elements.confirmed.checked=true;form.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));assert.match(document.querySelector('#result').textContent,/116,18/);document.querySelector('#save').click();const saved=JSON.parse(localStorage.getItem('fiber-analytics-offers-v1'));assert.equal(saved[0].currency,'USD');assert.equal(saved[0].cny,undefined);
+form.elements.currency.value='CNY';form.elements.currency.dispatchEvent(new Event('change'));assert.equal(form.elements.cny.required,true);assert.equal(form.elements.cny.disabled,false);console.log('Passed calculator currency fields: no CNY input for USD, VAT calculation and saved offer without dummy rate, CNY still required for CNY prices');dom.window.close();
