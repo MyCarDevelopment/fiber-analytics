@@ -1,0 +1,10 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {landed,priceChange,latest,sameTerms,numeric,endpoint,age} from '../docs/team/model.mjs';
+const terms={material:'6D',fiber_group:'Регуляр',country:'Узбекистан',basis:'FCA',currency:'USD',weight:22000,point:'Ташкент',warehouse:'Екатеринбург',route_id:'r'};
+const q={id:'q',supplier_id:'s',quote_date:'2026-11-10',created_at:'2026-11-10T10:00:00Z',price:.85,usd_rate:100,cny_rate:14,vat_rate:22,snapshot:terms};
+const rate={id:'f',route_id:'r',usd:2250,rub:0,snapshot:{warehouse:'Екатеринбург'}};
+test('landed FCA includes freight and VAT',()=>{const r=landed(q,rate);assert.ok(Math.abs(r.net-95.227272727)<1e-6);assert.ok(Math.abs(r.gross-r.net*1.22)<1e-9);});
+test('CPT never adds freight and missing FCA rate does not become zero',()=>{assert.equal(landed(q,null),null);assert.equal(landed({...q,snapshot:{...terms,basis:'CPT'}},rate).net,85);assert.equal(landed(q,{...rate,route_id:'another'}),null);assert.equal(landed(q,{...rate,snapshot:{warehouse:'Иваново'}}),null);});
+test('price delta excludes changed currency, material, route and warehouse',()=>{const previous={...q,price:1};assert.ok(Math.abs(priceChange(q,previous)+15)<1e-9);for(const change of [{currency:'CNY'},{material:'15D'},{route_id:'different'},{warehouse:'Иваново'}])assert.equal(priceChange(q,{...previous,snapshot:{...terms,...change}}),null);assert.ok(sameTerms(terms,{...terms,weight:'22000'}));});
+test('latest prefers quote date then insertion time',()=>{assert.equal(latest([q,{...q,id:'new',created_at:'2026-11-10T11:00:00Z'},{...q,id:'old',quote_date:'2026-11-09',created_at:'2026-11-10T12:00:00Z'}],'supplier_id','s').id,'new');});
+test('validates public endpoint and numbers',()=>{assert.equal(endpoint('https://abc.supabase.co/'),'https://abc.supabase.co');for(const s of ['http://abc.supabase.co','https://evil.test','https://abc.supabase.co.evil.test','https://user:pass@abc.supabase.co'])assert.throws(()=>endpoint(s));assert.equal(numeric('1,05','цена'),1.05);for(const v of ['',0,-1,'NaN','Infinity'])assert.throws(()=>numeric(v,'цена'));assert.equal(age('2026-11-01','2026-11-10'),9);});
