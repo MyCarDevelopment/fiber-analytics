@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {aggregateOil} from '../scripts/update-oil.mjs';
+const header='observation_date,DCOILBRENTEU';let lines=[header];for(let w=0;w<24;w++)for(let d=0;d<5;d++)lines.push(new Date(Date.UTC(2026,4,25)+(w*7+d)*86400000).toISOString().slice(0,10)+','+String(80+d*2));
+const csv=lines.join('\n'),asOf=new Date('2026-11-04T12:00:00Z');
+test('oil mean includes only completed weeks, preserves real observation date',()=>{const data=aggregateOil(csv,asOf);assert.ok(data.observations.length>=20);assert.ok(data.observations.every(r=>r.date<'2026-11-02'));assert.equal(data.observations[0].value,84);assert.equal(data.observations[0].count,5);assert.equal(data.latestObservation,'2026-10-30');});
+test('oil parser rejects schema changes, duplicate dates and invalid values',()=>{for(const text of [csv.replace('DCOILBRENTEU','OTHER'),csv+'\n'+lines[1],csv.replace(',80',',bad'),csv+'\n2026-02-30,80'])assert.throws(()=>aggregateOil(text,asOf));});

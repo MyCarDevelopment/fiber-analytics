@@ -1,0 +1,950 @@
+{
+  "version": 1,
+  "series": "BRENT_WEEKLY_MEAN",
+  "name": "Brent · среднее недели",
+  "unit": "USD/barrel",
+  "source": "U.S. EIA via FRED · DCOILBRENTEU",
+  "sourceUrl": "https://fred.stlouisfed.org/series/DCOILBRENTEU",
+  "downloadUrl": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU",
+  "aggregation": "Среднее доступных дневных наблюдений завершённой календарной недели, минимум 3 дня. Дата — понедельник.",
+  "fetchedAt": "2026-11-13T11:59:26.243Z",
+  "latestObservation": "2026-11-06",
+  "observations": [
+    {
+      "date": "2023-11-13",
+      "value": 81.928,
+      "count": 5,
+      "lastObservation": "2023-11-17"
+    },
+    {
+      "date": "2023-11-20",
+      "value": 81.62,
+      "count": 5,
+      "lastObservation": "2023-11-24"
+    },
+    {
+      "date": "2023-11-27",
+      "value": 80.914,
+      "count": 5,
+      "lastObservation": "2023-12-01"
+    },
+    {
+      "date": "2023-12-04",
+      "value": 75.982,
+      "count": 5,
+      "lastObservation": "2023-12-08"
+    },
+    {
+      "date": "2023-12-11",
+      "value": 75.578,
+      "count": 5,
+      "lastObservation": "2023-12-15"
+    },
+    {
+      "date": "2023-12-18",
+      "value": 80.154,
+      "count": 5,
+      "lastObservation": "2023-12-22"
+    },
+    {
+      "date": "2023-12-25",
+      "value": 79.2333,
+      "count": 3,
+      "lastObservation": "2023-12-29"
+    },
+    {
+      "date": "2024-01-01",
+      "value": 76.88,
+      "count": 4,
+      "lastObservation": "2024-01-05"
+    },
+    {
+      "date": "2024-01-08",
+      "value": 78.4,
+      "count": 5,
+      "lastObservation": "2024-01-12"
+    },
+    {
+      "date": "2024-01-15",
+      "value": 80.108,
+      "count": 5,
+      "lastObservation": "2024-01-19"
+    },
+    {
+      "date": "2024-01-22",
+      "value": 82.312,
+      "count": 5,
+      "lastObservation": "2024-01-26"
+    },
+    {
+      "date": "2024-01-29",
+      "value": 82.57,
+      "count": 5,
+      "lastObservation": "2024-02-02"
+    },
+    {
+      "date": "2024-02-05",
+      "value": 81.506,
+      "count": 5,
+      "lastObservation": "2024-02-09"
+    },
+    {
+      "date": "2024-02-12",
+      "value": 84.444,
+      "count": 5,
+      "lastObservation": "2024-02-16"
+    },
+    {
+      "date": "2024-02-19",
+      "value": 85.018,
+      "count": 5,
+      "lastObservation": "2024-02-23"
+    },
+    {
+      "date": "2024-02-26",
+      "value": 84.256,
+      "count": 5,
+      "lastObservation": "2024-03-01"
+    },
+    {
+      "date": "2024-03-04",
+      "value": 85.632,
+      "count": 5,
+      "lastObservation": "2024-03-08"
+    },
+    {
+      "date": "2024-03-11",
+      "value": 84.52,
+      "count": 5,
+      "lastObservation": "2024-03-15"
+    },
+    {
+      "date": "2024-03-18",
+      "value": 85.878,
+      "count": 5,
+      "lastObservation": "2024-03-22"
+    },
+    {
+      "date": "2024-03-25",
+      "value": 85.8,
+      "count": 4,
+      "lastObservation": "2024-03-28"
+    },
+    {
+      "date": "2024-04-01",
+      "value": 90.34,
+      "count": 4,
+      "lastObservation": "2024-04-05"
+    },
+    {
+      "date": "2024-04-08",
+      "value": 92.008,
+      "count": 5,
+      "lastObservation": "2024-04-12"
+    },
+    {
+      "date": "2024-04-15",
+      "value": 89.594,
+      "count": 5,
+      "lastObservation": "2024-04-19"
+    },
+    {
+      "date": "2024-04-22",
+      "value": 88.532,
+      "count": 5,
+      "lastObservation": "2024-04-26"
+    },
+    {
+      "date": "2024-04-29",
+      "value": 85.726,
+      "count": 5,
+      "lastObservation": "2024-05-03"
+    },
+    {
+      "date": "2024-05-06",
+      "value": 82.9475,
+      "count": 4,
+      "lastObservation": "2024-05-10"
+    },
+    {
+      "date": "2024-05-13",
+      "value": 81.61,
+      "count": 5,
+      "lastObservation": "2024-05-17"
+    },
+    {
+      "date": "2024-05-20",
+      "value": 80.24,
+      "count": 5,
+      "lastObservation": "2024-05-24"
+    },
+    {
+      "date": "2024-05-27",
+      "value": 80.9175,
+      "count": 4,
+      "lastObservation": "2024-05-31"
+    },
+    {
+      "date": "2024-06-03",
+      "value": 76.586,
+      "count": 5,
+      "lastObservation": "2024-06-07"
+    },
+    {
+      "date": "2024-06-10",
+      "value": 80.638,
+      "count": 5,
+      "lastObservation": "2024-06-14"
+    },
+    {
+      "date": "2024-06-17",
+      "value": 85.044,
+      "count": 5,
+      "lastObservation": "2024-06-21"
+    },
+    {
+      "date": "2024-06-24",
+      "value": 86.716,
+      "count": 5,
+      "lastObservation": "2024-06-28"
+    },
+    {
+      "date": "2024-07-01",
+      "value": 88.02,
+      "count": 5,
+      "lastObservation": "2024-07-05"
+    },
+    {
+      "date": "2024-07-08",
+      "value": 86.804,
+      "count": 5,
+      "lastObservation": "2024-07-12"
+    },
+    {
+      "date": "2024-07-15",
+      "value": 86.046,
+      "count": 5,
+      "lastObservation": "2024-07-19"
+    },
+    {
+      "date": "2024-07-22",
+      "value": 82.516,
+      "count": 5,
+      "lastObservation": "2024-07-26"
+    },
+    {
+      "date": "2024-07-29",
+      "value": 80.262,
+      "count": 5,
+      "lastObservation": "2024-08-02"
+    },
+    {
+      "date": "2024-08-05",
+      "value": 78.844,
+      "count": 5,
+      "lastObservation": "2024-08-09"
+    },
+    {
+      "date": "2024-08-12",
+      "value": 82.474,
+      "count": 5,
+      "lastObservation": "2024-08-16"
+    },
+    {
+      "date": "2024-08-19",
+      "value": 79.57,
+      "count": 5,
+      "lastObservation": "2024-08-23"
+    },
+    {
+      "date": "2024-08-26",
+      "value": 80.825,
+      "count": 4,
+      "lastObservation": "2024-08-30"
+    },
+    {
+      "date": "2024-09-02",
+      "value": 75.248,
+      "count": 5,
+      "lastObservation": "2024-09-06"
+    },
+    {
+      "date": "2024-09-09",
+      "value": 72.102,
+      "count": 5,
+      "lastObservation": "2024-09-13"
+    },
+    {
+      "date": "2024-09-16",
+      "value": 74.984,
+      "count": 5,
+      "lastObservation": "2024-09-20"
+    },
+    {
+      "date": "2024-09-23",
+      "value": 74.066,
+      "count": 5,
+      "lastObservation": "2024-09-27"
+    },
+    {
+      "date": "2024-09-30",
+      "value": 75.88,
+      "count": 5,
+      "lastObservation": "2024-10-04"
+    },
+    {
+      "date": "2024-10-07",
+      "value": 79.342,
+      "count": 5,
+      "lastObservation": "2024-10-11"
+    },
+    {
+      "date": "2024-10-14",
+      "value": 74.584,
+      "count": 5,
+      "lastObservation": "2024-10-18"
+    },
+    {
+      "date": "2024-10-21",
+      "value": 74.69,
+      "count": 5,
+      "lastObservation": "2024-10-25"
+    },
+    {
+      "date": "2024-10-28",
+      "value": 72.61,
+      "count": 5,
+      "lastObservation": "2024-11-01"
+    },
+    {
+      "date": "2024-11-04",
+      "value": 75.632,
+      "count": 5,
+      "lastObservation": "2024-11-08"
+    },
+    {
+      "date": "2024-11-11",
+      "value": 72.89,
+      "count": 5,
+      "lastObservation": "2024-11-15"
+    },
+    {
+      "date": "2024-11-18",
+      "value": 74.838,
+      "count": 5,
+      "lastObservation": "2024-11-22"
+    },
+    {
+      "date": "2024-11-25",
+      "value": 74.164,
+      "count": 5,
+      "lastObservation": "2024-11-29"
+    },
+    {
+      "date": "2024-12-02",
+      "value": 73.97,
+      "count": 5,
+      "lastObservation": "2024-12-06"
+    },
+    {
+      "date": "2024-12-09",
+      "value": 74.032,
+      "count": 5,
+      "lastObservation": "2024-12-13"
+    },
+    {
+      "date": "2024-12-16",
+      "value": 73.794,
+      "count": 5,
+      "lastObservation": "2024-12-20"
+    },
+    {
+      "date": "2024-12-23",
+      "value": 73.13,
+      "count": 3,
+      "lastObservation": "2024-12-27"
+    },
+    {
+      "date": "2024-12-30",
+      "value": 75.42,
+      "count": 4,
+      "lastObservation": "2025-01-03"
+    },
+    {
+      "date": "2025-01-06",
+      "value": 78.136,
+      "count": 5,
+      "lastObservation": "2025-01-10"
+    },
+    {
+      "date": "2025-01-13",
+      "value": 82.794,
+      "count": 5,
+      "lastObservation": "2025-01-17"
+    },
+    {
+      "date": "2025-01-20",
+      "value": 79.916,
+      "count": 5,
+      "lastObservation": "2025-01-24"
+    },
+    {
+      "date": "2025-01-27",
+      "value": 77.372,
+      "count": 5,
+      "lastObservation": "2025-01-31"
+    },
+    {
+      "date": "2025-02-03",
+      "value": 75.4,
+      "count": 5,
+      "lastObservation": "2025-02-07"
+    },
+    {
+      "date": "2025-02-10",
+      "value": 76.012,
+      "count": 5,
+      "lastObservation": "2025-02-14"
+    },
+    {
+      "date": "2025-02-17",
+      "value": 76.088,
+      "count": 5,
+      "lastObservation": "2025-02-21"
+    },
+    {
+      "date": "2025-02-24",
+      "value": 74.252,
+      "count": 5,
+      "lastObservation": "2025-02-28"
+    },
+    {
+      "date": "2025-03-03",
+      "value": 71.93,
+      "count": 5,
+      "lastObservation": "2025-03-07"
+    },
+    {
+      "date": "2025-03-10",
+      "value": 71.542,
+      "count": 5,
+      "lastObservation": "2025-03-14"
+    },
+    {
+      "date": "2025-03-17",
+      "value": 72.21,
+      "count": 5,
+      "lastObservation": "2025-03-21"
+    },
+    {
+      "date": "2025-03-24",
+      "value": 74.35,
+      "count": 5,
+      "lastObservation": "2025-03-28"
+    },
+    {
+      "date": "2025-03-31",
+      "value": 74.636,
+      "count": 5,
+      "lastObservation": "2025-04-04"
+    },
+    {
+      "date": "2025-04-07",
+      "value": 66.098,
+      "count": 5,
+      "lastObservation": "2025-04-11"
+    },
+    {
+      "date": "2025-04-14",
+      "value": 67.7575,
+      "count": 4,
+      "lastObservation": "2025-04-17"
+    },
+    {
+      "date": "2025-04-21",
+      "value": 67.92,
+      "count": 4,
+      "lastObservation": "2025-04-25"
+    },
+    {
+      "date": "2025-04-28",
+      "value": 63.496,
+      "count": 5,
+      "lastObservation": "2025-05-02"
+    },
+    {
+      "date": "2025-05-05",
+      "value": 62.29,
+      "count": 4,
+      "lastObservation": "2025-05-09"
+    },
+    {
+      "date": "2025-05-12",
+      "value": 65.536,
+      "count": 5,
+      "lastObservation": "2025-05-16"
+    },
+    {
+      "date": "2025-05-19",
+      "value": 65.864,
+      "count": 5,
+      "lastObservation": "2025-05-23"
+    },
+    {
+      "date": "2025-05-26",
+      "value": 64.74,
+      "count": 4,
+      "lastObservation": "2025-05-30"
+    },
+    {
+      "date": "2025-06-02",
+      "value": 67.176,
+      "count": 5,
+      "lastObservation": "2025-06-06"
+    },
+    {
+      "date": "2025-06-09",
+      "value": 71.054,
+      "count": 5,
+      "lastObservation": "2025-06-13"
+    },
+    {
+      "date": "2025-06-16",
+      "value": 78.246,
+      "count": 5,
+      "lastObservation": "2025-06-20"
+    },
+    {
+      "date": "2025-06-23",
+      "value": 69.962,
+      "count": 5,
+      "lastObservation": "2025-06-27"
+    },
+    {
+      "date": "2025-06-30",
+      "value": 69.606,
+      "count": 5,
+      "lastObservation": "2025-07-04"
+    },
+    {
+      "date": "2025-07-07",
+      "value": 71.774,
+      "count": 5,
+      "lastObservation": "2025-07-11"
+    },
+    {
+      "date": "2025-07-14",
+      "value": 70.656,
+      "count": 5,
+      "lastObservation": "2025-07-18"
+    },
+    {
+      "date": "2025-07-21",
+      "value": 70.086,
+      "count": 5,
+      "lastObservation": "2025-07-25"
+    },
+    {
+      "date": "2025-07-28",
+      "value": 72.408,
+      "count": 5,
+      "lastObservation": "2025-08-01"
+    },
+    {
+      "date": "2025-08-04",
+      "value": 68.166,
+      "count": 5,
+      "lastObservation": "2025-08-08"
+    },
+    {
+      "date": "2025-08-11",
+      "value": 67.166,
+      "count": 5,
+      "lastObservation": "2025-08-15"
+    },
+    {
+      "date": "2025-08-18",
+      "value": 67.822,
+      "count": 5,
+      "lastObservation": "2025-08-22"
+    },
+    {
+      "date": "2025-08-25",
+      "value": 67.77,
+      "count": 4,
+      "lastObservation": "2025-08-29"
+    },
+    {
+      "date": "2025-09-01",
+      "value": 66.854,
+      "count": 5,
+      "lastObservation": "2025-09-05"
+    },
+    {
+      "date": "2025-09-08",
+      "value": 67.23,
+      "count": 5,
+      "lastObservation": "2025-09-12"
+    },
+    {
+      "date": "2025-09-15",
+      "value": 68.328,
+      "count": 5,
+      "lastObservation": "2025-09-19"
+    },
+    {
+      "date": "2025-09-22",
+      "value": 69.22,
+      "count": 5,
+      "lastObservation": "2025-09-26"
+    },
+    {
+      "date": "2025-09-29",
+      "value": 67.152,
+      "count": 5,
+      "lastObservation": "2025-10-03"
+    },
+    {
+      "date": "2025-10-06",
+      "value": 66.65,
+      "count": 5,
+      "lastObservation": "2025-10-10"
+    },
+    {
+      "date": "2025-10-13",
+      "value": 62.358,
+      "count": 5,
+      "lastObservation": "2025-10-17"
+    },
+    {
+      "date": "2025-10-20",
+      "value": 63.222,
+      "count": 5,
+      "lastObservation": "2025-10-24"
+    },
+    {
+      "date": "2025-10-27",
+      "value": 65.022,
+      "count": 5,
+      "lastObservation": "2025-10-31"
+    },
+    {
+      "date": "2025-11-03",
+      "value": 64.3,
+      "count": 5,
+      "lastObservation": "2025-11-07"
+    },
+    {
+      "date": "2025-11-10",
+      "value": 62.868,
+      "count": 5,
+      "lastObservation": "2025-11-14"
+    },
+    {
+      "date": "2025-11-17",
+      "value": 63.644,
+      "count": 5,
+      "lastObservation": "2025-11-21"
+    },
+    {
+      "date": "2025-11-24",
+      "value": 64.376,
+      "count": 5,
+      "lastObservation": "2025-11-28"
+    },
+    {
+      "date": "2025-12-01",
+      "value": 63.982,
+      "count": 5,
+      "lastObservation": "2025-12-05"
+    },
+    {
+      "date": "2025-12-08",
+      "value": 62.604,
+      "count": 5,
+      "lastObservation": "2025-12-12"
+    },
+    {
+      "date": "2025-12-15",
+      "value": 60.826,
+      "count": 5,
+      "lastObservation": "2025-12-19"
+    },
+    {
+      "date": "2025-12-22",
+      "value": 63.2067,
+      "count": 3,
+      "lastObservation": "2025-12-24"
+    },
+    {
+      "date": "2025-12-29",
+      "value": 62.1825,
+      "count": 4,
+      "lastObservation": "2026-01-02"
+    },
+    {
+      "date": "2026-01-05",
+      "value": 62.926,
+      "count": 5,
+      "lastObservation": "2026-01-09"
+    },
+    {
+      "date": "2026-01-12",
+      "value": 66.996,
+      "count": 5,
+      "lastObservation": "2026-01-16"
+    },
+    {
+      "date": "2026-01-19",
+      "value": 66.986,
+      "count": 5,
+      "lastObservation": "2026-01-23"
+    },
+    {
+      "date": "2026-01-26",
+      "value": 70.426,
+      "count": 5,
+      "lastObservation": "2026-01-30"
+    },
+    {
+      "date": "2026-02-02",
+      "value": 69.84,
+      "count": 5,
+      "lastObservation": "2026-02-06"
+    },
+    {
+      "date": "2026-02-09",
+      "value": 70.696,
+      "count": 5,
+      "lastObservation": "2026-02-13"
+    },
+    {
+      "date": "2026-02-16",
+      "value": 71.656,
+      "count": 5,
+      "lastObservation": "2026-02-20"
+    },
+    {
+      "date": "2026-02-23",
+      "value": 71.356,
+      "count": 5,
+      "lastObservation": "2026-02-27"
+    },
+    {
+      "date": "2026-03-02",
+      "value": 85.282,
+      "count": 5,
+      "lastObservation": "2026-03-06"
+    },
+    {
+      "date": "2026-03-09",
+      "value": 96.156,
+      "count": 5,
+      "lastObservation": "2026-03-13"
+    },
+    {
+      "date": "2026-03-16",
+      "value": 111.398,
+      "count": 5,
+      "lastObservation": "2026-03-20"
+    },
+    {
+      "date": "2026-03-23",
+      "value": 111.242,
+      "count": 5,
+      "lastObservation": "2026-03-27"
+    },
+    {
+      "date": "2026-03-30",
+      "value": 123.935,
+      "count": 4,
+      "lastObservation": "2026-04-02"
+    },
+    {
+      "date": "2026-04-06",
+      "value": 124.605,
+      "count": 4,
+      "lastObservation": "2026-04-10"
+    },
+    {
+      "date": "2026-04-13",
+      "value": 114.432,
+      "count": 5,
+      "lastObservation": "2026-04-17"
+    },
+    {
+      "date": "2026-04-20",
+      "value": 109.618,
+      "count": 5,
+      "lastObservation": "2026-04-24"
+    },
+    {
+      "date": "2026-04-27",
+      "value": 119.634,
+      "count": 5,
+      "lastObservation": "2026-05-01"
+    },
+    {
+      "date": "2026-05-04",
+      "value": 105.8775,
+      "count": 4,
+      "lastObservation": "2026-05-08"
+    },
+    {
+      "date": "2026-05-11",
+      "value": 110.526,
+      "count": 5,
+      "lastObservation": "2026-05-15"
+    },
+    {
+      "date": "2026-05-18",
+      "value": 110.608,
+      "count": 5,
+      "lastObservation": "2026-05-22"
+    },
+    {
+      "date": "2026-05-25",
+      "value": 97.0525,
+      "count": 4,
+      "lastObservation": "2026-05-29"
+    },
+    {
+      "date": "2026-06-01",
+      "value": 98.948,
+      "count": 5,
+      "lastObservation": "2026-06-05"
+    },
+    {
+      "date": "2026-06-08",
+      "value": 93.764,
+      "count": 5,
+      "lastObservation": "2026-06-12"
+    },
+    {
+      "date": "2026-06-15",
+      "value": 81,
+      "count": 5,
+      "lastObservation": "2026-06-19"
+    },
+    {
+      "date": "2026-06-22",
+      "value": 73.634,
+      "count": 5,
+      "lastObservation": "2026-06-26"
+    },
+    {
+      "date": "2026-06-29",
+      "value": 69.7,
+      "count": 5,
+      "lastObservation": "2026-07-03"
+    },
+    {
+      "date": "2026-07-06",
+      "value": 73.328,
+      "count": 5,
+      "lastObservation": "2026-07-10"
+    },
+    {
+      "date": "2026-07-13",
+      "value": 82.926,
+      "count": 5,
+      "lastObservation": "2026-07-17"
+    },
+    {
+      "date": "2026-07-20",
+      "value": 96.118,
+      "count": 5,
+      "lastObservation": "2026-07-24"
+    },
+    {
+      "date": "2026-07-27",
+      "value": 91.628,
+      "count": 5,
+      "lastObservation": "2026-07-31"
+    },
+    {
+      "date": "2026-08-03",
+      "value": 87.858,
+      "count": 5,
+      "lastObservation": "2026-08-07"
+    },
+    {
+      "date": "2026-08-10",
+      "value": 92.514,
+      "count": 5,
+      "lastObservation": "2026-08-14"
+    },
+    {
+      "date": "2026-08-17",
+      "value": 94.202,
+      "count": 5,
+      "lastObservation": "2026-08-21"
+    },
+    {
+      "date": "2026-08-24",
+      "value": 89.73,
+      "count": 5,
+      "lastObservation": "2026-08-28"
+    },
+    {
+      "date": "2026-08-31",
+      "value": 99.0925,
+      "count": 4,
+      "lastObservation": "2026-09-04"
+    },
+    {
+      "date": "2026-09-07",
+      "value": 111.828,
+      "count": 5,
+      "lastObservation": "2026-09-11"
+    },
+    {
+      "date": "2026-09-14",
+      "value": 124.146,
+      "count": 5,
+      "lastObservation": "2026-09-18"
+    },
+    {
+      "date": "2026-09-21",
+      "value": 117.084,
+      "count": 5,
+      "lastObservation": "2026-09-25"
+    },
+    {
+      "date": "2026-09-28",
+      "value": 120.034,
+      "count": 5,
+      "lastObservation": "2026-10-02"
+    },
+    {
+      "date": "2026-10-05",
+      "value": 127.432,
+      "count": 5,
+      "lastObservation": "2026-10-09"
+    },
+    {
+      "date": "2026-10-12",
+      "value": 125.592,
+      "count": 5,
+      "lastObservation": "2026-10-16"
+    },
+    {
+      "date": "2026-10-19",
+      "value": 121.02,
+      "count": 5,
+      "lastObservation": "2026-10-23"
+    },
+    {
+      "date": "2026-10-26",
+      "value": 121.17,
+      "count": 5,
+      "lastObservation": "2026-10-30"
+    },
+    {
+      "date": "2026-11-02",
+      "value": 100.41,
+      "count": 5,
+      "lastObservation": "2026-11-06"
+    }
+  ]
+}

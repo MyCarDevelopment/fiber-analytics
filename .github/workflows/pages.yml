@@ -6,8 +6,15 @@ on:
       - 'docs/**'
       - 'tests/**'
       - 'supabase/**'
+      - 'scripts/update-oil.mjs'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      source_ref:
+        type: string
+        required: false
+        default: ""
 permissions:
   contents: read
   pages: write
@@ -24,6 +31,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -39,6 +48,11 @@ jobs:
           node tests/reference-data.test.mjs
           node --check docs/team/app.mjs
           node --check docs/team/api.mjs
+          node --check docs/team/analytics-view.mjs
+          node --check docs/team/analytics-model.mjs
+          node tests/analytics-model.test.mjs
+          node tests/analytics-ui.test.mjs
+          node tests/oil-data.test.mjs
           node tests/team-model.test.mjs
           node tests/team-db.test.mjs
           node tests/freight-v2-db.test.mjs
