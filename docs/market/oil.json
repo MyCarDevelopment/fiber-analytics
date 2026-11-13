@@ -7,7 +7,7 @@
   "sourceUrl": "https://fred.stlouisfed.org/series/DCOILBRENTEU",
   "downloadUrl": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU",
   "aggregation": "Среднее доступных дневных наблюдений завершённой календарной недели, минимум 3 дня. Дата — понедельник.",
-  "fetchedAt": "2026-11-13T12:25:23.487Z",
+  "fetchedAt": "2026-11-13T23:35:29.680Z",
   "latestObservation": "2026-11-06",
   "observations": [
     {
