@@ -50,6 +50,7 @@ jobs:
           node --check docs/team/api.mjs
           node --check docs/team/analytics-view.mjs
           node --check docs/team/analytics-model.mjs
+          node tests/periods.test.mjs
           node tests/analytics-model.test.mjs
           node tests/analytics-ui.test.mjs
           node tests/oil-data.test.mjs

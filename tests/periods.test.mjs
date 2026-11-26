@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {periodWindow,periodComparison} from '../docs/team/periods.mjs';
+const w=periodWindow('2024-03-01','2024-03-28');
+assert.deepEqual(w,{start:'2024-03-01',end:'2024-03-28',previousStart:'2024-02-02',previousEnd:'2024-02-29'});
+assert.deepEqual(periodWindow('2026-01-01','2026-01-01'),{start:'2026-01-01',end:'2026-01-01',previousStart:'2025-12-31',previousEnd:'2025-12-31'});
+for(const [start,end] of [['','2026-01-01'],['2026-02-30','2026-03-02'],['2026-03-01','2026-02-28'],['2020-01-01','2026-01-01']])assert.throws(()=>periodWindow(start,end));
+const result=periodComparison([{date:'2024-02-01',value:999},{date:'2024-02-02',value:100},{date:'2024-02-29',value:120},{date:'2024-03-01',value:110},{date:'2024-03-28',value:132},{date:'2024-03-29',value:999}],w);
+assert.equal(result.currentAverage,121);assert.equal(result.previousAverage,110);assert.ok(Math.abs(result.change-10)<1e-9);assert.equal(result.currentCount,2);assert.equal(result.previousCount,2);
+assert.equal(periodComparison([{date:'2024-03-01',value:100}],w).change,null);
+assert.equal(periodComparison([{date:'2024-02-02',value:100}],w).change,null);
+console.log('Passed period windows: equal durations, leap year, invalid dates, bounds, missing observations and average comparison');
