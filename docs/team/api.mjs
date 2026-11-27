@@ -11,9 +11,10 @@ export function configure(url,key){
  connection={url,key};localStorage.setItem(connectionKey,JSON.stringify(connection));
 }
 function remember(value){session=value;try{if(value)sessionStorage.setItem(sessionKey,JSON.stringify(value));else sessionStorage.removeItem(sessionKey);}catch{}}
-async function raw(path,{method='GET',body,auth=false}={}){
+async function raw(path,{method='GET',body,auth=false,returning=false}={}){
  if(!configured())throw Error('Общая база пока не подключена');
  const headers={apikey:connection.key,'Content-Type':'application/json'};
+ if(returning)headers.Prefer='return=representation';
  if(auth){await refresh();if(!session?.access_token)throw Error('Войдите по почте');headers.Authorization=`Bearer ${session.access_token}`;}
  const r=await fetch(`${connection.url}${path}`,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});
  const text=await r.text();let result;try{result=text?JSON.parse(text):null;}catch{throw Error('Сервис вернул неожиданный ответ');}
@@ -32,3 +33,5 @@ export const settings=()=>raw('/rest/v1/fa_settings?select=*',{auth:true});
 export const insert=(table,body)=>raw(`/rest/v1/${table}`,{method:'POST',body,auth:true});
 export const update=(table,id,body)=>raw(`/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`,{method:'PATCH',body,auth:true});
 export const rpc=(name,body)=>raw(`/rest/v1/rpc/${name}`,{method:'POST',body,auth:true});
+
+export const insertReturning=(table,body)=>raw(`/rest/v1/${table}`,{method:'POST',body,auth:true,returning:true});

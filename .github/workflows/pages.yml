@@ -57,6 +57,8 @@ jobs:
           node tests/team-model.test.mjs
           node tests/team-db.test.mjs
           node tests/freight-v2-db.test.mjs
+          node --check docs/team/freight-grid.mjs
+          node tests/freight-grid.test.mjs
           node tests/currency-fields.test.mjs
           node tests/login-install.test.mjs
           node tests/team-ui.test.mjs
