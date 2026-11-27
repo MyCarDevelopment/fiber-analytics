@@ -1,11 +1,17 @@
+import {validateCbr,quoteAtCbr} from './cbr.mjs';
+import {summaryCalculation} from './summary-calculation.mjs';
 import {renderFreightGrid,clearFreightGrid,hasFreightDrafts} from './freight-grid.mjs';
 import {renderAnalytics,clearAnalytics} from './analytics-view.mjs';
 import * as api from './api.mjs';
 import {roles,warehouses,groups,today,ordered,latest,sameTerms,priceChange,age,landed,numeric,loginToEmail,emailToLogin,baseCost,matchingRoutes,costForRoute,normalizedPoint} from './model.mjs';
 const $=s=>document.querySelector(s);
 const E=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e;};
+const fxNumber=n=>new Intl.NumberFormat('ru-RU',{minimumFractionDigits:4,maximumFractionDigits:6}).format(n);
 const money=n=>new Intl.NumberFormat('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
 let state={suppliers:[],routes:[],quotes:[],rates:[],members:[],days:7,workflow:1},me=null,view=['summary','suppliers','routes','analytics'].includes(window.location.hash.slice(1))?window.location.hash.slice(1):'summary',refreshing=false,editAction=null,authGeneration=0;
+let fxSnapshot=null,fxFetchedAt=0,fxRequest=null;const summaryDrafts=new Map(),summarySaving=new Set();
+async function loadFx(){if(fxRequest)return fxRequest;if(fxSnapshot&&Date.now()-fxFetchedAt<21600000)return fxSnapshot;fxRequest=(async()=>{try{const r=await fetch(new URL('../market/fx.json',import.meta.url),{cache:'no-cache'});if(!r.ok)throw Error();const value=validateCbr(await r.json());fxSnapshot=value;fxFetchedAt=Date.now();return value;}catch{return fxSnapshot;}finally{fxRequest=null;}})();return fxRequest;}
+const hasSummaryDrafts=()=>summaryDrafts.size>0||summarySaving.size>0;
 const canEdit=()=>['manager','lead'].includes(me?.role);
 const owns=row=>me?.role==='lead'||row.owner_email===me?.email;
 const person=email=>state.members.find(m=>m.email===email)?.name||email;
@@ -13,8 +19,8 @@ function status(text,error=false){$('#status').textContent=text;$('#status').cla
 function requireV2(){if(state.workflow>=2)return true;status('Нужно обновление базы: выполните SQL-файл 002-shared-freight.sql по ссылке в уведомлении.',true);return false;}
 function error(e){status(e.message||'Не удалось выполнить действие',true);}
 function button(text,fn){const b=E('button',text);b.type='button';b.addEventListener('click',async()=>{b.disabled=true;try{await fn();}catch(e){error(e);}finally{b.disabled=false;}});return b;}
-function hidePrivate(){clearFreightGrid();clearAnalytics();authGeneration++;me=null;state={suppliers:[],routes:[],quotes:[],rates:[],members:[],days:7,workflow:1};$('#workspace').hidden=true;$('#auth').hidden=false;$('#logout').hidden=true;$('#change-password').hidden=true;$('#account').textContent='';for(const id of ['#summary-body','#supplier-cards','#route-cards','#member-list','#edit-form'])$(id).replaceChildren();if($('#editor').open)$('#editor').close();}
-window.addEventListener('beforeunload',e=>{if(hasFreightDrafts()){e.preventDefault();e.returnValue='';}});
+function hidePrivate(){summaryDrafts.clear();summarySaving.clear();clearFreightGrid();clearAnalytics();authGeneration++;me=null;state={suppliers:[],routes:[],quotes:[],rates:[],members:[],days:7,workflow:1};$('#workspace').hidden=true;$('#auth').hidden=false;$('#logout').hidden=true;$('#change-password').hidden=true;$('#account').textContent='';for(const id of ['#summary-body','#supplier-cards','#route-cards','#member-list','#edit-form'])$(id).replaceChildren();if($('#editor').open)$('#editor').close();}
+window.addEventListener('beforeunload',e=>{if(hasFreightDrafts()||hasSummaryDrafts()){e.preventDefault();e.returnValue='';}});
 window.addEventListener('team-session-ended',()=>{hidePrivate();status('Сессия завершена. Войдите снова.',true);});
 function connectionUI(){const ready=api.configured();$('#not-configured').hidden=ready;$('#login-form button').disabled=!ready;$('#connection').open=!ready;$('#connection').hidden=ready;}
 $('#connection-form').addEventListener('submit',e=>{e.preventDefault();try{const f=new FormData(e.target);api.configure(f.get('url'),f.get('key'));connectionUI();status('Подключение сохранено. Теперь войдите по логину и паролю.');}catch(err){error(err);}});
@@ -25,7 +31,7 @@ async function load(){
  try{
   const user=await api.who();const members=await api.members();if(generation!==authGeneration)return;const member=members.find(m=>m.email===user.email?.toLowerCase()&&m.active);
   if(!member){await api.signOut();hidePrivate();throw Error('Для этого аккаунта доступ не открыт. Попросите руководителя проверить роль и статус сотрудника.');}
-  const result=await Promise.all([api.rows('fa_suppliers'),api.rows('fa_routes'),api.rows('fa_quotes'),api.rows('fa_freight_rates'),api.settings()]);
+  const result=await Promise.all([api.rows('fa_suppliers'),api.rows('fa_routes'),api.rows('fa_quotes'),api.rows('fa_freight_rates'),api.settings(),loadFx()]);
   if(generation!==authGeneration)return;me=member;state={members,suppliers:result[0],routes:result[1],quotes:result[2],rates:result[3],days:result[4][0]?.stale_days||7,workflow:result[4][0]?.workflow_version||1};
   $('#auth').hidden=true;$('#workspace').hidden=false;$('#logout').hidden=false;$('#change-password').hidden=false;$('#account').textContent=`${me.name} · ${roles[me.role]}`;
   $('#admin-tab').hidden=me.role!=='lead';$('#new-supplier').hidden=!canEdit();$('#new-route').hidden=false;$('#upgrade-notice').hidden=state.workflow>=2;
@@ -34,9 +40,9 @@ async function load(){
   fillOwnerFilter();render();showView(view);$('#loaded-at').textContent=`Обновлено ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})} · автообновление`;
  }finally{refreshing=false;}
 }
-async function reload(){const generation=authGeneration;await load();if(me&&generation===authGeneration)status('Общая сводка обновлена.');}
+async function reload(){fxFetchedAt=0;const generation=authGeneration;await load();if(me&&generation===authGeneration)status('Общая сводка обновлена.');}
 $('#reload').addEventListener('click',()=>reload().catch(error));
-setInterval(()=>{if(me&&!document.hidden&&!$('#editor').open&&!hasFreightDrafts())load().catch(error);},60000);
+setInterval(()=>{if(me&&!document.hidden&&!$('#editor').open&&!hasFreightDrafts()&&!hasSummaryDrafts())load().catch(error);},60000);
 function showView(name){view=name;if(name==='analytics')renderAnalytics(state);for(const e of document.querySelectorAll('.view'))e.hidden=e.id!==name;for(const b of document.querySelectorAll('[data-view]'))b.setAttribute('aria-current',String(b.dataset.view===name));}
 for(const b of document.querySelectorAll('[data-view]'))b.addEventListener('click',()=>showView(b.dataset.view));
 for(const v of warehouses){const o=E('option',v);o.value=v;$('#filter-warehouse').append(o);}for(const v of groups){const o=E('option',v);o.value=v;$('#filter-group').append(o);}
@@ -45,29 +51,32 @@ function fillOwnerFilter(){const value=$('#filter-owner').value;$('#filter-owner
 function latestRate(routeId){return latest(state.rates.filter(r=>r.quote_date<=today()),'route_id',routeId);}
 function summaryRows(){
  const needle=$('#filter-search').value.trim().toLowerCase(),warehouse=$('#filter-warehouse').value;
- return state.suppliers.filter(s=>s.active).map(s=>{const history=ordered(state.quotes.filter(q=>q.supplier_id===s.id)),q=history[0];const options=matchingRoutes(q,state.routes,warehouse).map(route=>{const rate=latestRate(route.id);return {route,rate,cost:costForRoute(q,route,rate)};});return {s,q,previous:history[1],base:baseCost(q),options,warehouse};}).filter(({s,q})=>{const t=q?.snapshot||s;return (!$('#filter-group').value||t.fiber_group===$('#filter-group').value)&&(!$('#filter-owner').value||s.owner_email===$('#filter-owner').value)&&(!needle||`${t.name} ${t.material}`.toLowerCase().includes(needle));});
+ return state.suppliers.filter(s=>s.active).map(s=>summaryCalculation(s,state,fxSnapshot,{warehouse})).filter(({s,q})=>{const t=q?.snapshot||s;return (!$('#filter-group').value||t.fiber_group===$('#filter-group').value)&&(!$('#filter-owner').value||s.owner_email===$('#filter-owner').value)&&(!needle||`${t.name} ${t.material}`.toLowerCase().includes(needle));});
 }
 function freshness(date){return `${date}${age(date)>state.days?' · устарело':''}`;}
 function fxText(q){return q.snapshot.currency==='USD'?`USD ${q.usd_rate}`:`CNY ${q.cny_rate} · USD ${q.usd_rate}`;}
 function renderSummary(){
- const body=$('#summary-body');body.replaceChildren();
- for(const {s,q,previous,base,options,warehouse}of summaryRows()){
-  const t=q?.snapshot||s,tr=E('tr'),name=E('td');name.append(E('strong',t.name),E('small',`${t.material} · ${t.country} · ${t.basis}`),E('small',person(s.owner_email)));
-  const price=E('td',q?`${money(q.price)} ${t.currency}/кг`:'Нет котировки'),delta=priceChange(q,previous);price.append(E('small',delta===null?'Нет предыдущей сопоставимой цены':`${delta>0?'+':''}${money(delta)}%`,delta>0?'delta-up':delta<0?'delta-down':''));
-  const total=E('td'),valid=options.filter(o=>o.cost);let label='Нет котировки',note='';
-  if(base){if(t.basis==='CPT'){label=`${money(base.net)} / ${money(base.gross)} ₽/кг`;note=`Доставка CPT включена: ${t.point}`;if(warehouse&&t.warehouse!==warehouse&&normalizedPoint(t.point)!==normalizedPoint(warehouse))note+=' · другой склад отдельно не рассчитан';}
-   else if(!warehouse){label=`${money(base.net)} / ${money(base.gross)} ₽/кг`;note='База без доставки';}
-   else if(valid.length===1){label=`${money(valid[0].cost.net)} / ${money(valid[0].cost.gross)} ₽/кг`;note=`Доставка до ${warehouse} · фрахт ${valid[0].rate.quote_date}`;}
-   else if(valid.length>1){const nets=valid.map(v=>v.cost.net);label=`${money(Math.min(...nets))}–${money(Math.max(...nets))} ₽/кг без НДС`;note=`${valid.length} ставки до ${warehouse} · подробнее в «Доставка»`;}
-   else{label='Нет ставки до выбранного склада';note='Добавьте общий маршрут с совпадающим пунктом отгрузки';}}
-  total.append(E('span',label),E('small',note));if(q)total.append(E('small',`НДС ${q.vat_rate}% · ${fxText(q)}`));
-  const dates=E('td',q?freshness(q.quote_date):'Нет цены',q&&age(q.quote_date)>state.days?'stale':'');for(const {rate}of valid)if(warehouse&&age(rate.quote_date)>state.days)dates.append(E('small',`Фрахт ${rate.quote_date} устарел`,'stale'));
-  const actions=E('td');actions.append(button('Доставка',()=>deliveryDialog(s)),button('История',()=>historyDialog(s)));tr.append(name,price,total,dates,actions);body.append(tr);
+ const body=$('#summary-body');body.replaceChildren();const selectedWarehouse=$('#filter-warehouse').value,destinations=selectedWarehouse?[selectedWarehouse]:warehouses,head=$('#summary-head');head.replaceChildren();for(const title of ['Поставщик / материал','Цена за кг','В рублях без фрахта / CPT',...destinations,'Дата цены','Действия']){const th=E('th',title);th.scope='col';head.append(th);}
+ $('#summary-fx').textContent=fxSnapshot?`ЦБ РФ на ${fxSnapshot.date}: USD ${fxNumber(fxSnapshot.rates.USD)} ₽ · CNY ${fxNumber(fxSnapshot.rates.CNY)} ₽${age(fxSnapshot.date)>7?' · курс давно не обновлялся':''}`:'Курсы ЦБ РФ недоступны. Расчёт в рублях появится после загрузки курсов. Нажмите «Обновить».';
+ for(const {s,q,previous,base,destinations:regional}of summaryRows()){
+  const t=q?.snapshot||s,tr=E('tr'),name=E('td');name.append(E('strong',t.name),E('small',`${t.material} · ${t.country} · ${t.basis}`),E('small',`Отгрузка: ${t.point}`),E('small',person(s.owner_email)));
+  const price=E('td'),delta=priceChange(q,previous);price.append(E('strong',q?`${money(q.price)} ${t.currency}/кг`:'Нет котировки'),E('small',delta===null?'Нет предыдущей сопоставимой цены':`${delta>0?'+':''}${money(delta)}%`,delta>0?'delta-up':delta<0?'delta-down':''));
+  const editable=canEdit()&&owns(s)&&state.workflow>=2&&(!q||sameTerms(s,q.snapshot));
+  if(editable){const draft=summaryDrafts.get(s.id),wrap=E('div',undefined,'summary-price-edit'),input=E('input');input.type='text';input.inputMode='decimal';input.placeholder=`Цена, ${s.currency}/кг`;input.value=draft?.price??(q?String(q.price):'');input.setAttribute('aria-label',`Цена ${s.name}, ${s.currency}/кг`);const vat=E('input');vat.type='text';vat.inputMode='decimal';vat.value=draft?.vat??String(q?.vat_rate??0);vat.setAttribute('aria-label',`НДС ${s.name}, %`);const vatLabel=E('label','НДС, %');vatLabel.append(vat);wrap.append(input,vatLabel);const save=button('Сохранить цену',()=>saveSummaryPrice(s,q));save.disabled=!draft||!fxSnapshot||summarySaving.has(s.id);for(const n of [input,vat]){n.disabled=summarySaving.has(s.id);n.addEventListener('input',()=>{const d={price:input.value,vat:vat.value};if(d.price===(q?String(q.price):'')&&d.vat===String(q?.vat_rate??0))summaryDrafts.delete(s.id);else summaryDrafts.set(s.id,d);wrap.classList.toggle('is-dirty',summaryDrafts.has(s.id));save.disabled=!summaryDrafts.has(s.id)||!fxSnapshot;});}wrap.classList.toggle('is-dirty',!!draft);wrap.append(save);price.append(wrap);}
+  const total=E('td');appendSummaryCost(total,base);total.append(E('small',t.basis==='CPT'?`CPT: доставка включена до ${t.point}`:'Цена волокна без доставки'));if(q)total.append(E('small',`НДС ${q.vat_rate}%`));tr.append(name,price,total);
+  if(t.basis==='CPT'){const included=E('td',`CPT · ${t.point}. Фрахт уже в цене; повторно не прибавляется.`,'summary-cpt');included.colSpan=destinations.length;tr.append(included);}else for(const region of regional){const cell=E('td'),valid=region.options.filter(o=>o.cost);if(valid.length){for(const v of valid){const option=E('div',undefined,'summary-route-cost');appendSummaryCost(option,v.cost);option.append(E('small',v.route.origin),E('small',`Фрахт ${freshness(v.rate.quote_date)}`,age(v.rate.quote_date)>state.days?'stale':''));cell.append(option);}}else cell.append(E('span',!q?'Нет котировки':!fxSnapshot?'Нет курса ЦБ':'Нет ставки'),E('small',`До ${region.warehouse}`));tr.append(cell);}
+  const dates=E('td',q?freshness(q.quote_date):'Нет цены',q&&age(q.quote_date)>state.days?'stale':'');const actions=E('td');actions.append(button('Доставка',()=>deliveryDialog(s)),button('История',()=>historyDialog(s)));if(canEdit()&&owns(s)&&!editable)actions.append(button('Проверить условия',()=>quoteDialog(s)));tr.append(dates,actions);body.append(tr);
  }
- if(!body.children.length){const td=E('td','Нет предложений по выбранным условиям.');td.colSpan=5;const tr=E('tr');tr.append(td);body.append(tr);}
+ if(!body.children.length){const td=E('td','Нет предложений по выбранным условиям.');td.colSpan=5+destinations.length;const tr=E('tr');tr.append(td);body.append(tr);}
+}
+function appendSummaryCost(box,cost){box.append(E('strong',cost?`${money(cost.net)} ₽/кг`:'—'));if(cost)box.append(E('small',`${money(cost.gross)} с НДС`));}
+async function saveSummaryPrice(s,q){
+ if(!requireV2())return;const draft=summaryDrafts.get(s.id);if(!draft||!fxSnapshot||summarySaving.has(s.id))return;const generation=authGeneration,fx=fxSnapshot;
+ if(/[\t\r\n]/.test(draft.price+draft.vat))throw Error('Вставляйте одну цену в ячейку');const price=numeric(draft.price.replace(/\s/g,''),'Цена',{max:1000000}),vat_rate=numeric(draft.vat,'НДС',{zero:true,max:100});summarySaving.add(s.id);renderSummary();
+ try{const quotes=await api.rows('fa_quotes');if(generation!==authGeneration)return;const current=latest(quotes.filter(q=>q.quote_date<=today()),'supplier_id',s.id);if((current?.id??null)!==(q?.id??null))throw Error('Цена уже обновлена. Скопируйте введённое значение и нажмите «Обновить», чтобы сравнить изменения.');await api.insert('fa_quotes',{supplier_id:s.id,card_version:s.updated_at,quote_date:today(),price,vat_rate,usd_rate:fx.rates.USD,cny_rate:s.currency==='CNY'?fx.rates.CNY:null,note:`Курс ЦБ РФ на ${fx.date}. https://www.cbr.ru/currency_base/daily/`});if(generation!==authGeneration)return;summaryDrafts.delete(s.id);await load();status('Цена сохранена. Себестоимость пересчитана по всем направлениям.');}finally{summarySaving.delete(s.id);if(generation===authGeneration&&me)renderSummary();}
 }
 function deliveryDialog(s){
- const q=latest(state.quotes,'supplier_id',s.id);if(!q)throw Error('Сначала внесите цену поставщика');openDialog(`Доставка · ${q.snapshot.name}`);editAction=null;const box=$('#edit-form'),base=baseCost(q);box.append(E('p',`Цена: ${money(q.price)} ${q.snapshot.currency}/кг. База: ${base?money(base.net):'—'} ₽/кг без НДС. Загрузка: ${q.snapshot.weight} кг.`,'note full'));
+ const q=quoteAtCbr(latest(state.quotes.filter(q=>q.quote_date<=today()),'supplier_id',s.id),fxSnapshot);if(!q)throw Error('Для расчёта нужны цена поставщика и курс ЦБ РФ');openDialog(`Доставка · ${q.snapshot.name}`);editAction=null;const box=$('#edit-form'),base=baseCost(q);box.append(E('p',`Курс ЦБ РФ на ${fxSnapshot.date}. Цена: ${money(q.price)} ${q.snapshot.currency}/кг. База: ${base?money(base.net):'—'} ₽/кг без НДС. Загрузка: ${q.snapshot.weight} кг.`,'note full'));
  if(q.snapshot.basis==='CPT'){box.append(E('p',`Иран, CPT: доставка до ${q.snapshot.point} уже включена. Повторно фрахт не начисляется.`,'full'));return;}
  box.append(E('p',`Пункт отгрузки: ${q.snapshot.point}. Показаны только совпадающие пункты и типы фрахта.`,'note full'));
  const routes=matchingRoutes(q,state.routes),scroll=E('div',undefined,'table-scroll full'),table=E('table'),head=E('tr');for(const title of ['Склад / маршрут','Фрахт за транспорт','Дата','Без / с НДС, ₽/кг'])head.append(E('th',title));const th=E('thead');th.append(head);table.append(th);const body=E('tbody');
@@ -121,7 +130,7 @@ $('#new-route').addEventListener('click',()=>routeDialog());
 function quoteDialog(s){
  if(!requireV2())return;const q=latest(state.quotes,'supplier_id',s.id);openDialog(`Новая цена · ${s.name}`);
  field('price',`Цена без НДС, ${s.currency}/кг`,{value:q?.snapshot.currency===s.currency?q.price:'',type:'number',min:0.0001,max:1000000});field('quote_date','Дата актуальности',{type:'date',value:today(),max:today()});
- field('usd_rate','Курс USD → RUB',{value:q?.usd_rate,type:'number',min:0.0001,max:1000000});if(s.currency==='CNY')field('cny_rate','Курс CNY → RUB',{value:q?.cny_rate,type:'number',min:0.0001,max:1000000});field('vat_rate','Расчётная ставка НДС, %',{value:q?.vat_rate??0,type:'number',min:0,max:100});field('note','Комментарий / источник предложения',{type:'textarea',value:'',required:false,maxLength:1000,full:true});
+ field('usd_rate','Курс USD → RUB',{value:fxSnapshot?.rates.USD??q?.usd_rate,type:'number',min:0.0001,max:1000000});if(s.currency==='CNY')field('cny_rate','Курс CNY → RUB',{value:fxSnapshot?.rates.CNY??q?.cny_rate,type:'number',min:0.0001,max:1000000});field('vat_rate','Расчётная ставка НДС, %',{value:q?.vat_rate??0,type:'number',min:0,max:100});field('note','Комментарий / источник предложения',{type:'textarea',value:'',required:false,maxLength:1000,full:true});
  $('#edit-form').append(E('p',s.basis==='CPT'?'Доставка CPT включена до согласованного пункта; отдельно не прибавляется.':'Фрахт обновляется отдельно в карточке маршрута. При расчёте сводки используется последняя ставка этого маршрута. Проверьте, что маршрут покрывает доставку полностью.','note full'));
  submitDialog(async v=>{for(const k of ['price','usd_rate','vat_rate',...(s.currency==='CNY'?['cny_rate']:[])])v[k]=numeric(v[k],k,{zero:k==='vat_rate',max:k==='vat_rate'?100:1000000});await api.insert('fa_quotes',{...v,cny_rate:s.currency==='CNY'?v.cny_rate:null,supplier_id:s.id,card_version:s.updated_at});});
 }
@@ -138,8 +147,8 @@ function rateHistory(r){openDialog(`История фрахта · ${r.origin}`)
 $('#member-form').addEventListener('submit',async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;try{const v=Object.fromEntries(new FormData(e.target));await api.rpc('fa_set_member',{p_email:loginToEmail(v.login),p_name:v.name,p_role:v.role,p_active:v.active==='true'});e.target.reset();await reload();}catch(err){error(err);}finally{b.disabled=false;}});
 $('#settings-form').addEventListener('submit',async e=>{e.preventDefault();try{await api.update('fa_settings','true',{stale_days:numeric(e.target.elements.days.value,'Срок',{max:90})});await reload();}catch(err){error(err);}});
 $('#export-summary').addEventListener('click',()=>{
- const rows=[['Поставщик','Материал','Страна','Условия','Дата цены','Цена/кг','Валюта','Изменение %','База без доставки RUB/кг','НДС %','Склад расчёта','Маршрут','Дата фрахта','Себестоимость без НДС RUB/кг','Себестоимость с НДС RUB/кг','USD/RUB','CNY/RUB','Ответственный']];
- for(const {s,q,previous,base,options,warehouse}of summaryRows()){const t=q?.snapshot||s;const variants=warehouse&&t.basis!=='CPT'?options.filter(o=>o.cost):[{route:null,rate:null,cost:base}];if(!variants.length)variants.push({route:null,rate:null,cost:null});for(const v of variants)rows.push([t.name,t.material,t.country,t.basis,q?.quote_date,q?.price,t.currency,priceChange(q,previous),base?.net,q?.vat_rate,warehouse||'',v.route?.origin||'',v.rate?.quote_date||'',v.cost?.net,v.cost?.gross,q?.usd_rate,t.currency==='CNY'?q?.cny_rate:'',person(s.owner_email)]);}
+ const rows=[['Поставщик','Материал','Страна','Условия','Дата цены','Цена/кг','Валюта','Изменение %','База без доставки RUB/кг','НДС %','Склад расчёта','Маршрут','Дата фрахта','Себестоимость без НДС RUB/кг','Себестоимость с НДС RUB/кг','USD/RUB','CNY/RUB','Ответственный','Дата курса ЦБ РФ']];
+ for(const {s,q,previous,base,destinations,calculationQuote}of summaryRows()){const t=q?.snapshot||s;const variants=t.basis==='CPT'?[{warehouse:t.point,route:null,rate:null,cost:base}]:destinations.flatMap(d=>d.options.length?d.options.map(o=>({...o,warehouse:d.warehouse})):[{warehouse:d.warehouse,cost:null}]);for(const v of variants)rows.push([t.name,t.material,t.country,t.basis,q?.quote_date,q?.price,t.currency,priceChange(q,previous),base?.net,q?.vat_rate,v.warehouse,v.route?.origin||'',v.rate?.quote_date||'',v.cost?.net,v.cost?.gross,calculationQuote?.usd_rate,t.currency==='CNY'?calculationQuote?.cny_rate:'',person(s.owner_email),fxSnapshot?.date||'']);}
  const cell=v=>{let s=String(v??'');if(/^(?:\s*[=+@\-]|[\t\r])/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"';};const blob=new Blob(['\uFEFF'+rows.map(row=>row.map(cell).join(';')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=E('a');a.href=url;a.download=`fiber-team-${today()}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
 connectionUI();if(api.signedIn())load().catch(error);

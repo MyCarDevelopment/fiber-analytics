@@ -7,6 +7,7 @@ on:
       - 'tests/**'
       - 'supabase/**'
       - 'scripts/update-oil.mjs'
+      - 'scripts/update-fx.mjs'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
   workflow_call:
@@ -55,6 +56,8 @@ jobs:
           node tests/analytics-ui.test.mjs
           node tests/oil-data.test.mjs
           node tests/team-model.test.mjs
+          node tests/summary-calculation.test.mjs
+          node tests/summary-grid.test.mjs
           node tests/team-db.test.mjs
           node tests/freight-v2-db.test.mjs
           node --check docs/team/freight-grid.mjs
