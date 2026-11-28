@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "date": "2026-11-27",
-  "requestedDate": "2026-11-27",
+  "date": "2026-11-28",
+  "requestedDate": "2026-11-28",
   "source": "Банк России",
   "sourceUrl": "https://www.cbr.ru/currency_base/daily/",
   "rates": {
-    "USD": 82.1265,
-    "CNY": 12.3184
+    "USD": 82.2732,
+    "CNY": 12.327
   },
-  "fetchedAt": "2026-11-27T05:21:36.712Z"
+  "fetchedAt": "2026-11-28T15:39:53.412Z"
 }
